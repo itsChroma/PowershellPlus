@@ -23,6 +23,7 @@ namespace PowerPlus.Views
         public MainWindow()
         {
             InitializeComponent();
+            MaxHeight = SystemParameters.PrimaryScreenHeight;
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -36,6 +37,7 @@ namespace PowerPlus.Views
                 WindowState = WindowState.Normal;
             else
             {
+                WindowStyle = WindowStyle.None;
                 WindowState = WindowState.Maximized;
             }
             
@@ -45,6 +47,7 @@ namespace PowerPlus.Views
         {
             Close();
         }
+
     }
 }
 

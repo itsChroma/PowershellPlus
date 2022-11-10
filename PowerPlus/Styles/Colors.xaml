@@ -1,4 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+
+    <SolidColorBrush x:Key="NavBarColour"
+                     Color="#23272A"/>
+
+    <SolidColorBrush x:Key="SurfaceColour"
+                     Color="#2C2F33"/>
+
 </ResourceDictionary>
