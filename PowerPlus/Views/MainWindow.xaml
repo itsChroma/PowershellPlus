@@ -1,0 +1,266 @@
+﻿<Window x:Class="PowerPlus.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PowerPlus"
+        xmlns:cc="clr-namespace:PowerPlus.Custom_Controls"
+        mc:Ignorable="d"
+        Title="MainWindow"
+        Height="782" Width="1235"
+        MinHeight="760" MinWidth="864"
+        WindowStartupLocation="CenterScreen"
+        x:Name="mainWindow">
+    <Window.Resources>
+        <BitmapImage x:Key="Image0" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\0.jpg"/>
+        <BitmapImage x:Key="Image1" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\1.jpg"/>
+        <BitmapImage x:Key="Image2" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\2.jpg"/>
+        <BitmapImage x:Key="Image3" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\3.jpg"/>
+        <BitmapImage x:Key="Image4" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\4.jpg"/>
+        <BitmapImage x:Key="Image5" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\5.jpg"/>
+
+
+    </Window.Resources>
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="AllowsTransparency" Value="True"/>
+            <Setter Property="WindowStyle" Value="None"/>
+            <Setter Property="UseLayoutRounding" Value="True"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+            <Setter Property="WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <WindowChrome
+                            CaptionHeight="32"
+                            CornerRadius="10"
+                            GlassFrameThickness="0"
+                            NonClientFrameEdges="None"
+                            ResizeBorderThickness="1"
+                            UseAeroCaptionButtons="False"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Window}">
+                        <Border x:Name="RootBorder"
+                                BorderBrush="DarkSlateGray"
+                                BorderThickness="0"
+                                Background="{TemplateBinding Background}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="280"/>
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <!--Region TitleBar-->
+                                <Grid x:Name="TitleBarGrid"
+                                      Grid.Row="0"
+                                      Grid.Column="1"
+                                      Height="32">
+                                    <TextBlock 
+                                        Name="Title"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Margin="30,0"
+                                        Text="{TemplateBinding Title}"
+                                        Foreground="DarkSlateGray"
+                                        FontWeight="Bold"/>
+
+                                    <!--Window Buttons-->
+                                    <StackPanel
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                        <Button 
+                                            x:Name="MinimizeButton"
+                                                Click="MinimizeButton_Click"
+                                            Content="&#xE921;"
+                                            FontFamily="Segoe MDL2 Assets"
+                                                FontSize="11"
+                                            Style="{StaticResource WindowChromeButtonStyle}"/>
+                                        <Button 
+                                            x:Name="MaximizeButton"
+                                                Click="MaximizeButton_Click"
+                                            Content="&#xE923;"
+                                            FontFamily="Segoe MDL2 Assets"
+                                                FontSize="11"
+                                            Style="{StaticResource WindowChromeRestoreButtonStyle}"/>
+                                        <Button 
+                                            x:Name="CloseButton"
+                                                Click="CloseButton_Click"
+                                            Content="&#xE8BB;"
+                                            FontFamily="Segoe MDL2 Assets"
+                                                FontSize="11"
+                                            Style="{StaticResource WindowChromeCloseButtonStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <!--End Region-->
+                                
+                                <!--Region Window Content-->
+                                <Grid
+                                    Grid.RowSpan="2"
+                                    Grid.Column="0">
+                                    <Grid.Background>
+                                        <ImageBrush 
+                                            x:Name="ImageBrush"
+                                            ImageSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\0.jpg"
+                                            Stretch="UniformToFill"
+                                            AlignmentX="Right"/>
+                                    </Grid.Background>
+                                    <Border Name="Border">
+                                        <Border.Background>
+                                            <SolidColorBrush 
+                                                Color="#FF343F3D"
+                                                Opacity=".65"/>
+                                        </Border.Background>
+                                    </Border>
+                                </Grid>
+                                <Grid Grid.RowSpan="2"
+                                      Grid.Row="2">
+                                    <AdornerDecorator>
+                                        <ContentPresenter />
+                                    </AdornerDecorator>
+                                </Grid>
+                                <!--End Region-->
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ImageBrush"
+                                            Storyboard.TargetProperty="ImageSource"
+                                            Duration="0:0:35"
+                                            RepeatBehavior="Forever">
+                                            <DiscreteObjectKeyFrame 
+                                                Value="{StaticResource Image0}"
+                                                KeyTime="0:0:5"/>
+                                            <DiscreteObjectKeyFrame 
+                                                Value="{StaticResource Image1}"
+                                                KeyTime="0:0:10"/>
+                                            <DiscreteObjectKeyFrame 
+                                                Value="{StaticResource Image2}"
+                                                KeyTime="0:0:15"/>
+                                            <DiscreteObjectKeyFrame 
+                                                Value="{StaticResource Image3}"
+                                                KeyTime="0:0:20"/>
+                                            <DiscreteObjectKeyFrame 
+                                                Value="{StaticResource Image4}"
+                                                KeyTime="0:0:25"/>
+                                            <DiscreteObjectKeyFrame 
+                                                Value="{StaticResource Image5}"
+                                                KeyTime="0:0:30"/>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+
+                            <Trigger Property="WindowState"
+                                     Value="Maximized">
+                                <Setter TargetName="RootBorder" Property="BorderBrush" Value="Transparent"/>
+                                <Setter TargetName="RootBorder" Property="Padding" Value="7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Style>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        
+        <!--Region Left Navigation-->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="95"/>
+            </Grid.RowDefinitions>
+        </Grid>
+
+        <ScrollViewer
+            Grid.Row="0"
+            Margin="25,0"
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Effect" Value="{StaticResource DropShadowEffect}"/>
+                    </Style>
+                </StackPanel.Resources>
+                <TextBlock
+                    Text="Favourites"/>
+                <ItemsControl
+                    Margin="0,0,0,17">
+                    <cc:DriveAndFolderButton
+                        Content="Desktop"
+                        Icon="{StaticResource Folder}"
+                        Margin="0,5,0,0"/>
+
+                </ItemsControl>
+
+                <TextBlock
+                    Text="Remote"/>
+                <ItemsControl
+                    Margin="0,0,0,17">
+                    <cc:DriveAndFolderButton
+                        Content="OneDrive"
+                        Icon="{StaticResource OneDrive}"
+                        Margin="0,5,0,0"/>
+                    <cc:DriveAndFolderButton
+                        Content="Google Drive"
+                        Icon="{StaticResource GoogleDrive}"
+                        Margin="0,5,0,0"/>
+                    <cc:DriveAndFolderButton
+                        Content="Dropbox"
+                        Icon="{StaticResource Dropbox}"
+                        Margin="0,5,0,0"/>
+
+                </ItemsControl>
+
+                <TextBlock
+                    Text="Libraries"/>
+                <ItemsControl
+                    Margin="0,0,0,17">
+                    <cc:DriveAndFolderButton
+                        Content="Desktop"
+                        Icon="{StaticResource DesktopFolder}"
+                        Margin="0,5,0,0"/>
+                    <cc:DriveAndFolderButton
+                        Content="Documents"
+                        Icon="{StaticResource DocumentsFolder}"
+                        Margin="0,5,0,0"/>
+                    <cc:DriveAndFolderButton
+                        Content="Downloads"
+                        Icon="{StaticResource DownloadsFolder}"
+                        Margin="0,5,0,0"/>
+                    <cc:DriveAndFolderButton
+                        Content="Pictures"
+                        Icon="{StaticResource PicturesFolder}"
+                        Margin="0,5,0,0"/>
+                    <cc:DriveAndFolderButton
+                        Content="Videos"
+                        Icon="{StaticResource VideosFolder}"
+                        Margin="0,5,0,0"/>
+                    <cc:DriveAndFolderButton
+                        Content="Music"
+                        Icon="{StaticResource MusicsFolder}"
+                        Margin="0,5,0,0"/>
+
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
+
+ <!--Current Time 11:25-->
