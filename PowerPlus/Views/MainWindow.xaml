@@ -123,7 +123,8 @@
                                     </Border>
                                 </Grid>
                                 <Grid Grid.RowSpan="2"
-                                      Grid.Row="2">
+                                      Grid.Row="2"
+                                      Grid.ColumnSpan="2">
                                     <AdornerDecorator>
                                         <ContentPresenter />
                                     </AdornerDecorator>
@@ -198,6 +199,10 @@
                         <cc:DriveAndFolderButton
                         Content="Dropbox"
                         Icon="{StaticResource Dropbox}"
+                        Margin="0,5,0,0"/>
+                        <cc:DriveAndFolderButton
+                        Content="GitHub"
+                        Icon="{StaticResource GitHub}"
                         Margin="0,5,0,0"/>
 
                     </ItemsControl>
