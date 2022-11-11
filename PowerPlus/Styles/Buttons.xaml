@@ -28,7 +28,7 @@
                                 <Condition Property="IsMouseCaptured" 
                                            Value="false"/>
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" Value="GhostWhite"/>
+                            <Setter Property="Background" Value="{DynamicResource SurfaceColour}"/>
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -61,13 +61,13 @@
                                Value="false"/>
                 </MultiTrigger.Conditions>
                 <Setter Property="Background" 
-                        Value="PaleVioletRed"/>
+                        Value="#FF605C"/>
             </MultiTrigger>
                 
             <Trigger Property="IsPressed"
                      Value="True">
                 <Setter Property="Background"
-                        Value="PaleVioletRed"/>
+                        Value="#FF605C"/>
             </Trigger>
         </Style.Triggers>
     </Style>

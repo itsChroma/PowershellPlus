@@ -6,20 +6,13 @@
         xmlns:local="clr-namespace:PowerPlus"
         xmlns:cc="clr-namespace:PowerPlus.Custom_Controls"
         mc:Ignorable="d"
-        Title="PowerShell+"
+        Title="PowerShell+" 
         Height="782" Width="1235"
         MinHeight="760" MinWidth="864"
         WindowStartupLocation="CenterScreen"
         x:Name="mainWindow"
         Background="{StaticResource SurfaceColour}">
     <Window.Resources>
-        <BitmapImage x:Key="Image0" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\0.jpg"/>
-        <BitmapImage x:Key="Image1" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\1.jpg"/>
-        <BitmapImage x:Key="Image2" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\2.jpg"/>
-        <BitmapImage x:Key="Image3" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\3.jpg"/>
-        <BitmapImage x:Key="Image4" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\4.jpg"/>
-        <BitmapImage x:Key="Image5" UriSource="C:\$PowerPlus\PowerPlus\PowerPlus\Resources\5.jpg"/>
-
 
     </Window.Resources>
     <Window.Style>
@@ -33,7 +26,7 @@
                 <Setter.Value>
                     <WindowChrome
                             CaptionHeight="32"
-                            CornerRadius="0"
+                            CornerRadius="5"
                             GlassFrameThickness="0"
                             NonClientFrameEdges="None"
                             ResizeBorderThickness="1"
@@ -197,8 +190,8 @@
                         Icon="{StaticResource GoogleDrive}"
                         Margin="0,5,0,0"/>
                         <cc:DriveAndFolderButton
-                        Content="Dropbox"
-                        Icon="{StaticResource Dropbox}"
+                        Content="DevOps"
+                        Icon="{StaticResource DevOps}"
                         Margin="0,5,0,0"/>
                         <cc:DriveAndFolderButton
                         Content="GitHub"
@@ -234,6 +227,10 @@
                         <cc:DriveAndFolderButton
                         Content="Music"
                         Icon="{StaticResource MusicsFolder}"
+                        Margin="0,5,0,0"/>
+                        <cc:DriveAndFolderButton
+                        Content="Add Folder"
+                        Icon="{StaticResource Add}"
                         Margin="0,5,0,0"/>
 
                     </ItemsControl>
