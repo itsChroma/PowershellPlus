@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PowerPlus"
         xmlns:cc="clr-namespace:PowerPlus.Custom_Controls"
+        xmlns:views="clr-namespace:PowerPlus.Views"
+        xmlns:prop="clr-namespace:PowerPlus.Properties"
         mc:Ignorable="d"
         Title="PowerShell+" 
         Height="782" Width="1235"
@@ -143,7 +144,7 @@
             <ColumnDefinition Width="280"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        
+
 
         <!--Region Left Navigation-->
         <Grid>
@@ -309,13 +310,206 @@
                         Style="{StaticResource MenuHeaderRadioButtonStyle}"/>
 
                     <ToggleButton 
-                        x:Name="ToggleExpandCollapseSubMenu"/>
+                        x:Name="ToggleExpandCollapseSubMenu"
+                        FontSize="10"
+                        Style="{StaticResource ToggleMenuButtonStyle}"/>
 
                 </StackPanel>
+
+                <!--#region Searchbox-->
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+                    <TextBox 
+                        Margin="12,0"
+                        x:Name="SearchBox"
+                        Style="{StaticResource SearchBoxStyle}"/>
+
+                    <Button 
+                        Content="{StaticResource Share}"
+                        FontSize="20"
+                        Width="44"
+                        Margin="0,0,12,0"
+                        Style="{StaticResource ButtonWithIconStyle}"/>
+
+                </StackPanel>
+                <!--#endregion-->
             </Grid>
+            <!--#endregion-->
+            
+            <!--#region Sub Menu-->
+            <Grid Grid.Row="1"
+                  HorizontalAlignment="Left">
+                <Grid.Resources>
+                    <views:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+                </Grid.Resources>
+                
+                <ItemsControl 
+                    x:Name="OperationsPanel"
+                    HorizontalAlignment="Left"
+                    Margin="5,0,0,0"
+                    Visibility="{Binding IsChecked, Converter={StaticResource BoolToVisibilityConverter}, ElementName=ToggleExpandCollapseSubMenu}">
+
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel 
+                                    Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <cc:SubMenuIconButton
+                            Content="Pin"
+                            Icon="{StaticResource Pin}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                    <cc:SubMenuIconButton
+                            Content="Copy"
+                            Icon="{StaticResource Copy}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                    <cc:SubMenuIconButton
+                            Content="Cut"
+                            Icon="{StaticResource Cut}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                    <cc:SubMenuIconButton
+                            Content="Paste"
+                            Icon="{StaticResource Paste}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                    <cc:SubMenuIconButton
+                            Content="Delete"
+                            Icon="{StaticResource Delete}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                    <cc:SubMenuIconButton
+                            Content="Rename"
+                            Icon="{StaticResource Rename}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                    <cc:SubMenuIconButton
+                            Content="New Folder"
+                            Icon="{StaticResource NewFolder}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                    <cc:SubMenuIconButton
+                            Content="Properties"
+                            Icon="{StaticResource FileSettings}"
+                            Style="{StaticResource SubMenuIconButtonStyle}"/>
+                </ItemsControl>
+
+            </Grid>
+            <!--#endregion-->
+            
+            <!--#region Nav Buttons-->
+            <Grid Grid.Row="2"
+                  Margin="10, 0, 0, 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    Content="{StaticResource Back}"
+                    Width="Auto"
+                    FontSize="16"
+                    HorizontalContentAlignment="Center"
+                    Style="{StaticResource ButtonWithIconStyle}"/>
+
+                <Button
+                    Grid.Column="1"
+                    Content="{StaticResource Forward}"
+                    Width="Auto"
+                    FontSize="16"
+                    HorizontalContentAlignment="Center"
+                    Style="{StaticResource ButtonWithIconStyle}"/>
+
+                <Button
+                    Grid.Column="2"
+                    Content="{StaticResource Up}"
+                    Width="Auto"
+                    FontSize="20"
+                    HorizontalContentAlignment="Center"
+                    Style="{StaticResource ButtonWithIconStyle}"/>
+
+                <TextBox 
+                    Grid.Column="3"
+                    Name="AddressBar"
+                    HorizontalAlignment="Stretch"
+                    Margin="12,0"
+                    Text="C:/"
+                    Style="{StaticResource AddressBarStyle}"/>
+            </Grid>
+            <!--#endregion-->
+            
+            <!--#region File Viewer-->
+            <ListView Grid.Row="3"
+                      x:Name="ListViewController"
+                      Background="Transparent"
+                      Margin="12,10,12,5"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      BorderThickness="1"
+                      BorderBrush="White"
+                      SelectionMode="Extended">
+                <ListViewItem Content="Program Files"
+                              Tag="{StaticResource Folder}"/>
+                <ListViewItem Content="Program Files (x86)"
+                              Tag="{StaticResource Folder}"/>
+                <ListViewItem Content="Users"
+                              Tag="{StaticResource Folder}"/>
+                <ListViewItem Content="Windows"
+                              Tag="{StaticResource Folder}"/>
+                <ListViewItem Content="Version Finder.ps1"
+                              Tag="{StaticResource File}"/>
+            </ListView>
+            <!--#endregion-->
+            
+            <!--#region Footer-->
+            <DockPanel Grid.Row="4"
+                       Height="25"
+                       LastChildFill="False">
+                <DockPanel.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Foreground" Value="White"/>
+                    </Style>
+                </DockPanel.Resources>
+
+                <StackPanel DockPanel.Dock="Left"
+                            Margin="12,0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock>
+                        <Run Text="{Binding Items.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Run Text="Items"/>
+                        <Run Text="|"/>
+                        <Run Text="{Binding SelectedItems.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Run>
+                            <Run.Style>
+                                <Style TargetType="{x:Type Run}">
+                                    <Setter Property="Text" Value="Items selected"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItems.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     Value="0">
+                                            <Setter Property="Text"
+                                                    Value="Items selected"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedItems.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     Value="0">
+                                            <Setter Property="Text"
+                                                    Value="Item selected"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Run.Style>
+                        </Run>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right"
+                            Margin="12,0"
+                            VerticalAlignment="Center">
+                    <TextBlock
+                        Text="465 Gb"/>
+                </StackPanel>
+            </DockPanel>
             <!--#endregion-->
         </Grid>
     </Grid>
 </Window>
-
-<!--Current Time 11:25-->

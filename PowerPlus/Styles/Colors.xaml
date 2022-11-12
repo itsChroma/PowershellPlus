@@ -7,4 +7,6 @@
     <SolidColorBrush x:Key="SurfaceColour"
                      Color="#2C2F33"/>
 
+    <SolidColorBrush x:Key="IconHover"
+                     Color="#2F3237"/>
 </ResourceDictionary>
