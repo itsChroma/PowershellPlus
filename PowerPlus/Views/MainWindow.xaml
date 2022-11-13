@@ -3,8 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PowerPlus"
         xmlns:cc="clr-namespace:PowerPlus.Custom_Controls"
+        xmlns:views="clr-namespace:PowerPlus.Views"
+        xmlns:prop="clr-namespace:PowerPlus.Properties"
+        xmlns:viewmodel="clr-namespace:PowerPlus.ViewModel"
+        xmlns:model="clr-namespace:PowerPlus.Models"
+        xmlns:powerPlus="clr-namespace:PowerPlus"
+        xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="PowerShell+" 
         Height="782" Width="1235"
@@ -12,6 +17,9 @@
         WindowStartupLocation="CenterScreen"
         x:Name="mainWindow"
         Background="{StaticResource SurfaceColour}">
+    <Window.DataContext>
+        <viewmodel:ViewModel/>
+    </Window.DataContext>
     <Window.Resources>
 
     </Window.Resources>
@@ -143,7 +151,7 @@
             <ColumnDefinition Width="280"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        
+
 
         <!--Region Left Navigation-->
         <Grid>
@@ -165,94 +173,61 @@
                             <Setter Property="Foreground" Value="White"/>
                             <Setter Property="Effect" Value="{StaticResource DropShadowEffect}"/>
                         </Style>
-                    </StackPanel.Resources>
-                    <TextBlock
-                    Text="Favourites"/>
-                    <ItemsControl
-                    Margin="0,0,0,17">
-                        <cc:DriveAndFolderButton
-                        Content="Desktop"
-                        Icon="{StaticResource Folder}"
-                        Margin="0,5,0,0"/>
 
-                    </ItemsControl>
+                        <DataTemplate x:Key="NavFolderDataTemplate">
+                            <cc:DriveAndFolderButton
+                                Content="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                Icon="{Binding FileIcon, UpdateSourceTrigger=PropertyChanged}"
+                                Command="{Binding DataContext.GetFilesListCommand, ElementName=mainWindow}"
+                                CommandParameter="{Binding}"
+                                Margin="0,5,0,0"/>
+                        </DataTemplate>
+                    </StackPanel.Resources>
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="{x:Type StackPanel}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding FavoriteFolders.Count,
+                                        UpdateSourceTrigger=PropertyChanged}" Value="0">
+
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding FavoriteFolders.Count,
+                                        UpdateSourceTrigger=PropertyChanged}" Value="{x:Null}">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock
+                            Text="Favourites"/>
+                        <ItemsControl
+                            ItemTemplate="{StaticResource NavFolderDataTemplate}"
+                            ItemsSource="{Binding FavoriteFolders, UpdateSourceTrigger=PropertyChanged}"
+                            Margin="0,0,0,17">/>
+                        </ItemsControl>
+                    </StackPanel>
 
                     <TextBlock
                     Text="Remote"/>
                     <ItemsControl
-                    Margin="0,0,0,17">
-                        <cc:DriveAndFolderButton
-                        Content="OneDrive"
-                        Icon="{StaticResource OneDrive}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Google Drive"
-                        Icon="{StaticResource GoogleDrive}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="DevOps"
-                        Icon="{StaticResource DevOps}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="GitHub"
-                        Icon="{StaticResource GitHub}"
-                        Margin="0,5,0,0"/>
-
-                    </ItemsControl>
+                        ItemTemplate="{StaticResource NavFolderDataTemplate}"
+                        Margin="0,0,0,17"
+                        ItemsSource="{Binding RemoteFolders, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock
                     Text="Libraries"/>
                     <ItemsControl
-                    Margin="0,0,0,17">
-                        <cc:DriveAndFolderButton
-                        Content="Desktop"
-                        Icon="{StaticResource DesktopFolder}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Documents"
-                        Icon="{StaticResource DocumentsFolder}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Downloads"
-                        Icon="{StaticResource DownloadsFolder}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Pictures"
-                        Icon="{StaticResource PicturesFolder}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Videos"
-                        Icon="{StaticResource VideosFolder}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Music"
-                        Icon="{StaticResource MusicsFolder}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Add Folder"
-                        Icon="{StaticResource Add}"
-                        Margin="0,5,0,0"/>
-
-                    </ItemsControl>
+                        ItemTemplate="{StaticResource NavFolderDataTemplate}"
+                        Margin="0,0,0,17"
+                        ItemsSource="{Binding LibraryFolders, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock
                     Text="Devices"/>
                     <ItemsControl
-                    Margin="0,0,0,17">
-                        <cc:DriveAndFolderButton
-                        Content="Local Disk (C:)"
-                        Icon="{StaticResource CDrive}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Local Disk (D:)"
-                        Icon="{StaticResource NormalDrive}"
-                        Margin="0,5,0,0"/>
-                        <cc:DriveAndFolderButton
-                        Content="Local Disk (E:)"
-                        Icon="{StaticResource NormalDrive}"
-                        Margin="0,5,0,0"/>
-
-                    </ItemsControl>
+                        ItemTemplate="{StaticResource NavFolderDataTemplate}"
+                        Margin="0,0,0,17"
+                        ItemsSource="{Binding ConnectedDevices, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
             </ScrollViewer>
 
@@ -262,18 +237,20 @@
                 <cc:DriveAndFolderButton 
                 Content="John Doe"
                 Icon="{StaticResource User}"
-                Margin="10,5"/>
+                Margin="10,5"
+                Command="{Binding openUserProfileCommand}"/>
                 <cc:DriveAndFolderButton 
                 Content="Settings"
                 Icon="{StaticResource Settings}"
-                Margin="10,5"/>
+                Margin="10,5"
+                Command="{Binding openSettingsCommand}"/>
 
             </StackPanel>
         </Grid>
         <!--#endregion-->
 
         <Grid Grid.Column="1"
-              Margin="10,0,0,0">
+              Margin="10,5,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="38"/>
                 <!--Menu-->
@@ -298,24 +275,220 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center">
                     <RadioButton 
+                        x:Name="HomeTabButton"
                         Content="Home"
                         IsChecked="True"
                         Style="{StaticResource MenuHeaderRadioButtonStyle}"/>
-                    <RadioButton 
+                    <RadioButton
+                        x:Name="ComputerTabButton"
                         Content="Computer"
                         Style="{StaticResource MenuHeaderRadioButtonStyle}"/>
                     <RadioButton 
+                        x:Name="ViewTabButton"
                         Content="View"
                         Style="{StaticResource MenuHeaderRadioButtonStyle}"/>
 
                     <ToggleButton 
-                        x:Name="ToggleExpandCollapseSubMenu"/>
+                        x:Name="ToggleExpandCollapseSubMenu"
+                        IsChecked="True"
+                        FontSize="12"
+                        Style="{StaticResource ToggleMenuButtonStyle}"/>
 
                 </StackPanel>
+
+                <!--#region SearchBox-->
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+                    <TextBox 
+                        Margin="12,0"
+                        x:Name="SearchBox"
+                        Style="{StaticResource SearchBoxStyle}"/>
+
+                    <Button 
+                        Content="{StaticResource Share}"
+                        FontSize="20"
+                        Width="44"
+                        Margin="0,0,12,0"
+                        Style="{StaticResource ButtonWithIconStyle}"/>
+
+                </StackPanel>
+                <!--#endregion-->
             </Grid>
+            <!--#endregion-->
+
+            <!--#region Sub Menu-->
+            <Grid Grid.Row="1"
+                  HorizontalAlignment="Left">
+                <Grid.Resources>
+                    <views:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+                </Grid.Resources>
+
+                <ItemsControl 
+                    x:Name="OperationsPanel"
+                    HorizontalAlignment="Left"
+                    Margin="5,0,0,0"
+                    Visibility="{Binding IsChecked, Converter={StaticResource BoolToVisibilityConverter}, ElementName=ToggleExpandCollapseSubMenu}">
+
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel 
+                                    Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <cc:SubMenuIconButton
+                                Icon="{Binding Icon}"
+                                Content="{Binding Name}"
+                                Style="{StaticResource SubMenuIconButtonStyle}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+
+                    <ItemsControl.Style>
+                        <Style TargetType="{x:Type ItemsControl}">
+                            <Setter Property="ItemsSource" Value="{Binding HomeTabSubMenuCollection,
+                                UpdateSourceTrigger=PropertyChanged}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked, 
+                                    ElementName=ViewTabButton}" Value="True">
+                                    <Setter Property="ItemsSource"
+                                            Value="{Binding ViewTabSubMenuCollection, 
+                                        UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ItemsControl.Style>
+                </ItemsControl>
+
+            </Grid>
+            <!--#endregion-->
+
+            <!--#region Nav Buttons-->
+            <Grid Grid.Row="2"
+                  Margin="10, 0, 0, 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    Content="{StaticResource Back}"
+                    Width="Auto"
+                    FontSize="16"
+                    HorizontalContentAlignment="Center"
+                    Style="{StaticResource ButtonWithIconStyle}"/>
+
+                <Button
+                    Grid.Column="1"
+                    Content="{StaticResource Forward}"
+                    Width="Auto"
+                    FontSize="16"
+                    HorizontalContentAlignment="Center"
+                    Style="{StaticResource ButtonWithIconStyle}"/>
+
+                <Button
+                    Grid.Column="2"
+                    Content="{StaticResource Up}"
+                    Width="Auto"
+                    FontSize="20"
+                    HorizontalContentAlignment="Center"
+                    Style="{StaticResource ButtonWithIconStyle}"/>
+
+                <TextBox 
+                    Grid.Column="3"
+                    Name="AddressBar"
+                    HorizontalAlignment="Stretch"
+                    Margin="12,0"
+                    Text="{Binding CurrentDirectory, UpdateSourceTrigger=PropertyChanged}"
+                    Style="{StaticResource AddressBarStyle}"/>
+            </Grid>
+            <!--#endregion-->
+
+            <!--#region File Viewer-->
+            <ListView Grid.Row="3"
+                      x:Name="ListViewController"
+                      Background="Transparent"
+                      Margin="12,10,12,5"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      BorderThickness="1"
+                      SelectedItem="{Binding Mode=OneWay}"
+                      BorderBrush="White"
+                      SelectionMode="Extended"
+                      ItemsSource="{Binding NavigatesFolderFiles, UpdateSourceTrigger=PropertyChanged}">
+
+                <b:Interaction.Triggers>
+                    <b:EventTrigger EventName="MouseDoubleClick">
+                        <b:InvokeCommandAction
+                            Command="{Binding GetFilesListCommand}"
+                            CommandParameter="{Binding SelectedItem, ElementName=ListViewController}"/>
+                    </b:EventTrigger>
+                    <b:EventTrigger EventName="SelectionChanged">
+                        <b:InvokeCommandAction
+                            Command="{Binding GetFilesSizeCommand}"
+                            CommandParameter="{Binding SelectedItem, ElementName=ListViewController}"/>
+                    </b:EventTrigger>
+                </b:Interaction.Triggers>
+            </ListView>
+            <!--#endregion-->
+            
+            <!--#region Footer-->
+            <DockPanel Grid.Row="4"
+                       Height="25"
+                       LastChildFill="False">
+                <DockPanel.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Foreground" Value="White"/>
+                    </Style>
+                </DockPanel.Resources>
+
+                <StackPanel DockPanel.Dock="Left"
+                            Margin="12,0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock>
+                        <Run Text="{Binding Items.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Run Text="Items"/>
+                        <Run Text="|"/>
+                        <Run Text="{Binding SelectedItems.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Run>
+                            <Run.Style>
+                                <Style TargetType="{x:Type Run}">
+                                    <Setter Property="Text" Value="Items selected"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItem.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     Value="0">
+                                            <Setter Property="Text"
+                                                    Value="Items selected"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedItem.Count, ElementName=ListViewController, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     Value="0">
+                                            <Setter Property="Text"
+                                                    Value="Item selected"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Run.Style>
+                        </Run>
+                        <Run Text="{Binding SelectedFolderDetails, UpdateSourceTrigger=PropertyChanged}"/>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right"
+                            Margin="12,0"
+                            VerticalAlignment="Center">
+                    <TextBlock
+                        Text="465 Gb"/>
+                </StackPanel>
+            </DockPanel>
             <!--#endregion-->
         </Grid>
     </Grid>
 </Window>
-
-<!--Current Time 11:25-->
+    
+    <!-- Time = 31 20 -->
