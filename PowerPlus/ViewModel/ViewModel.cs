@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Threading;
 using System.Windows;
@@ -53,6 +54,39 @@ namespace PowerPlus.ViewModel
         public ObservableCollection<FileDetailsModel> NavigatesFolderFiles { get; set; }
         public ObservableCollection<SubMenuItemDetails> HomeTabSubMenuCollection { get; set; }
         public ObservableCollection<SubMenuItemDetails> ViewTabSubMenuCollection { get; set; }
+
+        public ObservableCollection<string> PathHistoryCollection { get; set; }
+        internal int position = 0;
+        public bool CanGoBack { get; set; }
+        public bool CanGoForward { get; set; }
+        public bool IsAtRootDirectory { get; set; }
+
+        internal bool _pathDisrupted;
+
+        public bool PathDisrupted
+        {
+            get => _pathDisrupted;
+            set
+            {
+                _pathDisrupted = value;
+                if (_pathDisrupted)
+                {
+                    var tempCollection = new ObservableCollection<string>();
+                    for (int i = position; i < PathHistoryCollection.Count - 1; i++)
+                    {
+                        tempCollection.Add(PathHistoryCollection[i]);
+                    }
+
+                    foreach (var path in tempCollection)
+                    {
+                        PathHistoryCollection.Remove(path);
+                    }
+                    OnPropertyChanged(nameof(PathHistoryCollection));
+                    _pathDisrupted = false;
+                }
+            }
+        }
+
         internal ReadOnlyCollection<string> tempFolderCollection;
 
         private BackgroundWorker bgGetFilesBackgroundWorker = new BackgroundWorker()
@@ -175,8 +209,17 @@ namespace PowerPlus.ViewModel
 
         void LoadDirectory(FileDetailsModel fileDetailsModel)
         {
+            CanGoBack = position != 0;
+            OnPropertyChanged(nameof(CanGoBack));
+
             NavigatesFolderFiles.Clear();
             tempFolderCollection = null;
+
+            if (PathHistoryCollection != null && position > 0)
+            {
+                if (PathHistoryCollection.ElementAt(position) != fileDetailsModel.Path)
+                    PathDisrupted = true;
+            }
 
             if (!bgGetFilesBackgroundWorker.IsBusy)
                 bgGetFilesBackgroundWorker.CancelAsync();
@@ -197,6 +240,19 @@ namespace PowerPlus.ViewModel
 
             CurrentDirectory = fileOrFolder.Path;
             OnPropertyChanged(nameof(CurrentDirectory));
+
+            var root = Path.GetPathRoot(fileOrFolder.Path);
+            if (string.IsNullOrWhiteSpace(CurrentDirectory)
+                || CurrentDirectory == root)
+            {
+                IsAtRootDirectory = true;
+                OnPropertyChanged(nameof(IsAtRootDirectory));
+            }
+            else
+            {
+                IsAtRootDirectory = false;
+                OnPropertyChanged(nameof(IsAtRootDirectory));
+            }
         }
 
         private void BgGetFilesBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -287,6 +343,16 @@ namespace PowerPlus.ViewModel
                 // Ignore
             }
 
+        }
+
+        internal void UpdatePathHistory(string path)
+        {
+            if (PathHistoryCollection != null && !string.IsNullOrEmpty(path))
+            {
+                PathHistoryCollection.Add(path);
+                position++;
+                OnPropertyChanged(nameof(PathHistoryCollection));
+            }
         }
 
         public ViewModel()
@@ -382,6 +448,12 @@ namespace PowerPlus.ViewModel
             {
                 Path = CurrentDirectory
             });
+
+            PathHistoryCollection = new ObservableCollection<string>();
+            PathHistoryCollection.Add(CurrentDirectory);
+
+            CanGoBack = position != 0;
+            OnPropertyChanged(nameof(CanGoBack));
         }
 
         #endregion
@@ -485,6 +557,8 @@ namespace PowerPlus.ViewModel
 
         public ICommand _getFilesListCommand;
 
+        
+
         public ICommand GetFilesListCommand =>
             _getFilesListCommand ?? (_getFilesListCommand = new RelayCommand(parameter =>
             {
@@ -493,7 +567,28 @@ namespace PowerPlus.ViewModel
 
                 SelectedFolderDetails = string.Empty;
                 OnPropertyChanged(nameof(SelectedFolderDetails));
-                LoadDirectory(file);
+
+                if (Directory.Exists(file.Path))
+                {
+                    UpdatePathHistory(file.Path);
+                    LoadDirectory(file);
+                }
+
+                else
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo(file.Path));
+                    }
+                    catch (Win32Exception w3Ex)
+                    {
+                        MessageBox.Show(w3Ex.Message, w3Ex.Source);
+                    }
+                    catch (InvalidOperationException ioEx)
+                    {
+                        MessageBox.Show($"{file.Name} is not installed on this computer.", ioEx.Source);
+                    }
+                }
             }));
 
         public ICommand _getFilesSizeCommand;
@@ -522,6 +617,95 @@ namespace PowerPlus.ViewModel
                 }
 
                 bgGetFilesSizeBackgroundWorker.RunWorkerAsync();
+            }));
+
+        protected ICommand _goToPreviousDirectoryCommand;
+
+        public ICommand GoToPreviousDirectoryCommand =>
+            _goToPreviousDirectoryCommand ?? (_goToPreviousDirectoryCommand = new Command(() =>
+            {
+                if (position >= 1)
+                {
+                    position--;
+                    LoadDirectory(new FileDetailsModel()
+                    {
+                        Path = PathHistoryCollection.ElementAt(position)
+                    });
+
+                    CanGoForward = true;
+                    OnPropertyChanged(nameof(CanGoForward));
+
+                    PathDisrupted = false;
+                    OnPropertyChanged(nameof(PathDisrupted));
+                }
+            }));
+
+        protected ICommand _goToForwardDirectoryCommand;
+
+        public ICommand GoToForwardDirectoryCommand =>
+            _goToForwardDirectoryCommand ?? (_goToForwardDirectoryCommand = new Command(() =>
+            {
+                if (position < PathHistoryCollection.Count - 1)
+                {
+                    position++;
+                    LoadDirectory(new FileDetailsModel()
+                    {
+                        Path = PathHistoryCollection.ElementAt(position)
+                    });
+
+                    CanGoForward =
+                        position < PathHistoryCollection.Count - 1 &&
+                        position != PathHistoryCollection.Count - 1;
+
+                    OnPropertyChanged(nameof(CanGoForward));
+                }
+            }));
+
+        protected ICommand _goToParentDirectoryCommand;
+
+        public ICommand GoToParentDirectoryCommand =>
+            _goToParentDirectoryCommand ?? (_goToParentDirectoryCommand = new Command(() =>
+            {
+                var ParentDirectory = string.Empty;
+                PathDisrupted = true;
+
+                var d = new DirectoryInfo(CurrentDirectory);
+
+                if (d.Parent != null)
+                {
+                    ParentDirectory = d.Parent.FullName;
+                    IsAtRootDirectory = false;
+                    OnPropertyChanged(nameof(IsAtRootDirectory));
+                }
+                else if (d.Parent == null)
+                {
+                    IsAtRootDirectory = true;
+                    OnPropertyChanged(nameof(IsAtRootDirectory));
+                    return;;
+                }
+                else
+                {
+                    ParentDirectory = d.Parent.ToString()
+                        .Split(Path.DirectorySeparatorChar)[1];
+                }
+
+                GetFilesListCommand.Execute(new FileDetailsModel()
+                {
+                    Path = ParentDirectory
+                });
+            }));
+
+        protected ICommand _navigateToPathCommand;
+
+        public ICommand NavigateToPathCommand =>
+            _navigateToPathCommand ?? (_navigateToPathCommand = new RelayCommand((parameter) =>
+            {
+                var path = parameter as string;
+                if(!string.IsNullOrEmpty(path))
+                    GetFilesListCommand.Execute(new FileDetailsModel()
+                    {
+                        Path = path
+                    });
             }));
 
         #endregion
