@@ -117,8 +117,8 @@
     </Compile>
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\RelayCommand.cs" />
-    <Compile Include="Custom Controls\SubMenuIconButton.cs" />
     <Compile Include="Custom Controls\DriveAndFolderButton.cs" />
+    <Compile Include="Custom Controls\SubMenuIconButton.cs" />
     <Compile Include="Models\FileDetailsModel.cs" />
     <Compile Include="Models\SubMenuItemDetails.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
