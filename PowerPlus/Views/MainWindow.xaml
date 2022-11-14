@@ -11,7 +11,6 @@
         xmlns:powerPlus="clr-namespace:PowerPlus"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="PowerShell+" 
         Height="782" Width="1235"
         MinHeight="760" MinWidth="864"
         WindowStartupLocation="CenterScreen"
@@ -25,7 +24,7 @@
     </Window.Resources>
     <Window.Style>
         <Style TargetType="{x:Type Window}">
-            <Setter Property="AllowsTransparency" Value="True"/>
+            <Setter Property="AllowsTransparency" Value="False"/>
             <Setter Property="WindowStyle" Value="None"/>
             <Setter Property="UseLayoutRounding" Value="True"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
@@ -94,7 +93,7 @@
                                         <Button 
                                             x:Name="MaximizeButton"
                                                 Click="MaximizeButton_Click"
-                                            Content="&#xE923;"
+                                            Content="&#xE922;"
                                             FontFamily="Segoe MDL2 Assets"
                                                 FontSize="11"
                                             Style="{StaticResource WindowChromeRestoreButtonStyle}"/>
@@ -146,6 +145,7 @@
             </Setter>
         </Style>
     </Window.Style>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="280"/>
