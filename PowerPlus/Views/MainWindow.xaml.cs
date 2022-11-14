@@ -24,7 +24,7 @@ namespace PowerPlus.Views
         public MainWindow()
         {
             InitializeComponent();
-            MaxHeight = SystemParameters.PrimaryScreenHeight;
+            MaxHeight = SystemParameters.WorkArea.Height;
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
