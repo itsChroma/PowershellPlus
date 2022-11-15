@@ -43,7 +43,7 @@
         <Setter Property="Content"
                 Value="&#xE923;"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding WindowsState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+            <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                          Value="Maximized">
                 <Setter Property="Content" Value="&#xE923;"/>
             </DataTrigger>
@@ -105,7 +105,7 @@
 
                         <Path 
                             Grid.Column="0"
-                            Data="{TemplateBinding Icon }"
+                            Data="{TemplateBinding Icon}"
                             Stretch="Uniform"
                             Fill="GhostWhite"
                             Height="15"
@@ -121,9 +121,14 @@
                         <!--Unpin Button-->
                         <Button 
                             Name="UnPinButton"
+                            Background="Transparent"
+                            Content="{DynamicResource UnPin}"
+                            Command="{TemplateBinding UnPinCommand}"
+                            CommandParameter="{Binding}"
                             Grid.Column="2"
-                            Width="40"
+                            Width="28"
                             Foreground="GhostWhite"
+                            Style="{DynamicResource ButtonWithIconStyle}"
                             Visibility="Collapsed"/>
                     </Grid>
                     <ControlTemplate.Triggers>
@@ -139,6 +144,13 @@
                             <Setter TargetName="bgBorder" Property="Visibility" Value="Visible"/>
                             <Setter TargetName="bgBorder" Property="Opacity" Value=".5"/>
                         </Trigger>
+
+                        <DataTrigger Binding="{Binding IsPinned}"
+                                     Value="True">
+                            <Setter TargetName="UnPinButton"
+                                    Property="Visibility"
+                                    Value="Visible"/>
+                        </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -334,4 +346,5 @@
         </Setter>
     </Style>
     <!--#endregion-->
+
 </ResourceDictionary>

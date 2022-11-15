@@ -25,6 +25,7 @@ namespace PowerPlus.Views
         {
             InitializeComponent();
             MaxHeight = SystemParameters.WorkArea.Height;
+            MaxWidth = SystemParameters.WorkArea.Width;
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)

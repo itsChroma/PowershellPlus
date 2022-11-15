@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.ComponentModel;
 using JetBrains.Annotations;
 using System.Collections.ObjectModel;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Mime;
@@ -20,6 +21,7 @@ using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.FileIO;
 using PowerPlus.Commands;
 using PowerPlus.Models;
+using PowerPlus.Views;
 using Syroot.Windows.IO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 using SearchOption = System.IO.SearchOption;
@@ -37,7 +39,7 @@ namespace PowerPlus.ViewModel
         }
 
         readonly ResourceDictionary _iconDictionary = 
-            Application.LoadComponent(new Uri("/PowerPlus;component/Resources/Icons.xaml", 
+            Application.LoadComponent(new Uri("/PowerPlus;component/Resources/Icons.xaml",
                 UriKind.RelativeOrAbsolute)) as ResourceDictionary;
 
         public string ParentDirectory { get; set; }
@@ -46,6 +48,7 @@ namespace PowerPlus.ViewModel
         public string NextDirectory { get; set; }
         public string SelectedDriveSize { get; set; }
         public string SelectedFolderDetails { get; set; }
+        public string NewFolderName { get; set; }
 
         public ObservableCollection<FileDetailsModel> FavoriteFolders { get; set; }
         public ObservableCollection<FileDetailsModel> RemoteFolders { get; set; }
@@ -54,12 +57,14 @@ namespace PowerPlus.ViewModel
         public ObservableCollection<FileDetailsModel> NavigatesFolderFiles { get; set; }
         public ObservableCollection<SubMenuItemDetails> HomeTabSubMenuCollection { get; set; }
         public ObservableCollection<SubMenuItemDetails> ViewTabSubMenuCollection { get; set; }
+        public ObservableCollection<FileDetailsModel> ClipBoardCollection { get; set; }
 
         public ObservableCollection<string> PathHistoryCollection { get; set; }
         internal int position = 0;
         public bool CanGoBack { get; set; }
         public bool CanGoForward { get; set; }
         public bool IsAtRootDirectory { get; set; }
+        public bool IsMoveOperation { get; set; }
 
         internal bool _pathDisrupted;
 
@@ -355,6 +360,324 @@ namespace PowerPlus.ViewModel
             }
         }
 
+        internal void PinFolder()
+        {
+            if (FavoriteFolders == null)
+                FavoriteFolders = new ObservableCollection<FileDetailsModel>();
+
+            try
+            {
+                var selectedFile =
+                    NavigatesFolderFiles.Where(folder => folder.IsSelected && !folder.IsPinned && folder.IsDirectory);
+
+                foreach (var directory in selectedFile)
+                {
+                    directory.IsPinned = true;
+                    FavoriteFolders.Add(directory);
+                    OnPropertyChanged(nameof(FavoriteFolders));
+                }
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
+
+        internal void Copy()
+        {
+            if (ClipBoardCollection == null)
+                ClipBoardCollection = new ObservableCollection<FileDetailsModel>();
+            ClipBoardCollection.Clear();
+
+            var selectedFiles = NavigatesFolderFiles.Where(File => File.IsSelected);
+            foreach (var file in selectedFiles)
+            {
+                if(!ClipBoardCollection.Contains(file))
+                    ClipBoardCollection.Add(file);
+            }
+            OnPropertyChanged(nameof(ClipBoardCollection));
+            IsMoveOperation = false;
+        }
+
+        internal void Cut()
+        {
+            if (ClipBoardCollection == null)
+                ClipBoardCollection = new ObservableCollection<FileDetailsModel>();
+            ClipBoardCollection.Clear();
+
+            var selectedFiles = NavigatesFolderFiles.Where(File => File.IsSelected);
+            foreach (var file in selectedFiles)
+            {
+                if (!ClipBoardCollection.Contains(file))
+                    ClipBoardCollection.Add(file);
+            }
+            OnPropertyChanged(nameof(ClipBoardCollection));
+            IsMoveOperation = true;
+        }
+
+        internal void Paste(bool IsMoveOperation)
+        {
+            if (ClipBoardCollection != null && ClipBoardCollection.Count > 0)
+            {
+                var destinationPath = CurrentDirectory;
+                if (!IsMoveOperation)
+                {
+                    foreach (var file in ClipBoardCollection)
+                    {
+                        var sourcePath = file.Path;
+                        var destPath = CurrentDirectory + "\\" + file.Name;
+                        destPath = Path.Combine(sourcePath, destPath);
+                        var temp = Path.GetExtension(file.Path);
+
+                        if (string.IsNullOrWhiteSpace(temp))
+                            FileSystem.CopyDirectory(file.Path, destPath, UIOption.AllDialogs,
+                                UICancelOption.DoNothing);
+                        else
+                            FileSystem.CopyFile(file.Path, destPath, UIOption.AllDialogs, UICancelOption.DoNothing);
+                    }
+                }
+                else
+                {
+                    foreach (var file in ClipBoardCollection)
+                    {
+                        var sourcePath = file.Path;
+                        var destPath = CurrentDirectory + "\\" + file.Name;
+                        destPath = Path.Combine(sourcePath, destPath);
+                        var temp = Path.GetExtension(file.Path);
+
+                        if (string.IsNullOrWhiteSpace(temp))
+                            FileSystem.MoveDirectory(file.Path, destPath, UIOption.AllDialogs,
+                                UICancelOption.DoNothing);
+                        else
+                            FileSystem.MoveFile(file.Path, destPath, UIOption.AllDialogs, UICancelOption.DoNothing);
+                    }
+                }
+
+                LoadDirectory(new FileDetailsModel()
+                {
+                    Path = destinationPath
+                });
+                IsMoveOperation = false;
+            }
+        }
+
+        internal void Delete()
+        {
+            var selectedFiles = NavigatesFolderFiles.Where(file => file.IsSelected);
+            if (selectedFiles.Count() > 1)
+            {
+                if (MessageBoxResult.Yes ==
+                    MessageBox.Show(
+                        $"Are you sure that you want to move these {selectedFiles.Count()} items to the Recycle Bin?",
+                        "Delete Multiple Items", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No))
+                {
+                    foreach (var file in selectedFiles)
+                    {
+                        try
+                        {
+                            if (string.IsNullOrWhiteSpace(Path.GetExtension(file.Path)))
+                            {
+                                FileSystem.DeleteDirectory(file.Path ?? string.Empty, UIOption.OnlyErrorDialogs,
+                                    RecycleOption.SendToRecycleBin, UICancelOption.DoNothing);
+                            }
+                            else
+                            {
+                                FileSystem.DeleteFile(file.Path, UIOption.OnlyErrorDialogs,
+                                    RecycleOption.SendToRecycleBin, UICancelOption.DoNothing);
+                            }
+                        }
+                        catch
+                        {
+                            // Ignore
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(selectedFiles.ElementAt(0).Path))
+                {
+                    FileSystem.DeleteDirectory(selectedFiles.ElementAt(0).Path, UIOption.OnlyErrorDialogs,
+                        RecycleOption.SendToRecycleBin, UICancelOption.DoNothing);
+                }
+                else
+                {
+                    FileSystem.DeleteFile(selectedFiles.ElementAt(0).Path, UIOption.OnlyErrorDialogs,
+                        RecycleOption.SendToRecycleBin, UICancelOption.DoNothing);
+                }
+            }
+
+            LoadDirectory(new FileDetailsModel() {Path = CurrentDirectory});
+        }
+
+        internal void Rename()
+        {
+            var selectedFiles =
+                new ObservableCollection<FileDetailsModel>(NavigatesFolderFiles.Where(x => x.IsSelected));
+            foreach (var file in selectedFiles)
+            {
+                if (file.IsSelected)
+                {
+                    restart:
+                    try
+                    {
+                        new RenameDialog()
+                        {
+                            DataContext = this,
+                            Owner = Application.Current.MainWindow,
+                            ShowActivated = true,
+                            ShowInTaskbar = false,
+                            Topmost = true,
+                            OldFolderName = $"Renaming: {file.Name}"
+                        }.ShowDialog();
+
+                        if (!string.IsNullOrWhiteSpace(NewFolderName))
+                        {
+                            if (file.IsDirectory)
+                                FileSystem.RenameDirectory(file.Path, NewFolderName);
+                            else
+                                FileSystem.RenameFile(file.Path, $"{NewFolderName}.{file.FileExtension.ToLower()}");
+                            file.Name = NewFolderName;
+                            file.IsSelected = false;
+
+                            NavigatesFolderFiles.Remove(file);
+                            OnPropertyChanged(nameof(NavigatesFolderFiles));
+                            NavigatesFolderFiles.Add(file);
+                            OnPropertyChanged(nameof(NavigatesFolderFiles));
+
+                            NewFolderName = string.Empty;
+                            OnPropertyChanged(NewFolderName);
+                        }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        goto restart;
+                    }
+                    catch (Exception exception)
+                    {
+                        MessageBox.Show(exception.Message, exception.Source);
+                    }
+                }
+            }
+        }
+
+        internal void CreateNewFolder()
+        {
+            CreateNewFolderCommand.Execute(null);
+        }
+
+        internal static string GetCreatedOn(string path)
+        {
+            try
+            {
+                if (FileSystem.DirectoryExists(path))
+                {
+                    return
+                        $"{FileSystem.GetDirectoryInfo(path).CreationTime.ToShortDateString()} {FileSystem.GetDirectoryInfo(path).CreationTime.ToShortTimeString()}";
+                }
+
+                return
+                    $"{FileSystem.GetFileInfo(path).CreationTime.ToShortDateString()} {FileSystem.GetFileInfo(path).CreationTime.ToShortTimeString()}";
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return String.Empty;
+            }
+            catch (FileNotFoundException)
+            {
+                return String.Empty;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return String.Empty;
+            }
+        }
+
+        internal static string GetModifiedOn(string path)
+        {
+            try
+            {
+                if (FileSystem.DirectoryExists(path))
+                {
+                    return
+                        $"{FileSystem.GetDirectoryInfo(path).LastWriteTime.ToShortDateString()} {FileSystem.GetDirectoryInfo(path).LastWriteTime.ToShortTimeString()}";
+                }
+
+                return
+                    $"{FileSystem.GetFileInfo(path).LastWriteTime.ToShortDateString()} {FileSystem.GetFileInfo(path).LastWriteTime.ToShortTimeString()}";
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return String.Empty;
+            }
+            catch (FileNotFoundException)
+            {
+                return String.Empty;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return String.Empty;
+            }
+        }
+
+        internal static string GetLastAccessedOn(string path)
+        {
+            try
+            {
+                if (FileSystem.DirectoryExists(path))
+                {
+                    return
+                        $"{FileSystem.GetDirectoryInfo(path).LastAccessTime.ToShortDateString()} {FileSystem.GetDirectoryInfo(path).LastAccessTime.ToShortTimeString()}";
+                }
+
+                return
+                    $"{FileSystem.GetFileInfo(path).LastAccessTime.ToShortDateString()} {FileSystem.GetFileInfo(path).LastAccessTime.ToShortTimeString()}";
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return String.Empty;
+            }
+            catch (FileNotFoundException)
+            {
+                return String.Empty;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return String.Empty;
+            }
+        }
+
+        internal void ShowProperties()
+        {
+            try
+            {
+                if (NavigatesFolderFiles.Count(file => file.IsSelected) == 1)
+                {
+                    var f = NavigatesFolderFiles.Where(file => file.IsSelected).ToArray();
+                    new PropertiesDialog()
+                    {
+                        FileName = f[0].Name,
+                        Icon = f[0].FileIcon,
+                        FileExtension = f[0].FileExtension,
+                        FullPath = f[0].Path,
+                        FileSize = f[0].FileSize,
+                        CreatedOn = GetCreatedOn(f[0].Path),
+                        ModifiedOn = GetModifiedOn(f[0].Path),
+                        AccessedOn = GetLastAccessedOn(f[0].Path),
+                        IsReadOnly = f[0].IsReadOnly,
+                        IsHidden = f[0].IsHidden,
+                        Owner = Application.Current.MainWindow,
+                        ShowInTaskbar = false,
+                        Topmost = true
+                    }.ShowDialog();
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, exception.Source);
+            }
+        }
+
         public ViewModel()
         {
             RemoteFolders = new ObservableCollection<FileDetailsModel>()
@@ -499,7 +822,7 @@ namespace PowerPlus.ViewModel
                    new SubMenuItemDetails()
                    {
                        Name = "Copy",
-                       Icon = (PathGeometry) _iconDictionary["Pin"]
+                       Icon = (PathGeometry) _iconDictionary["Copy"]
                    },
 
                    new SubMenuItemDetails()
@@ -708,6 +1031,98 @@ namespace PowerPlus.ViewModel
                     });
             }));
 
+        protected ICommand _subMenuFileOperationCommand;
+
+        
+
+        protected ICommand _unPinFavoriteFolderCommand;
+
+        public ICommand UnPinFavoriteFolderCommand =>
+            _unPinFavoriteFolderCommand ?? (_unPinFavoriteFolderCommand = new RelayCommand((parameter) =>
+            {
+                var folder = parameter as FileDetailsModel;
+                if (folder == null) return;
+
+                folder.IsPinned = false;
+                FavoriteFolders.Remove(folder);
+                OnPropertyChanged(nameof(FavoriteFolders));
+            }));
+
+        public ICommand SubMenuFileOperationCommand =>
+            _subMenuFileOperationCommand ?? (_subMenuFileOperationCommand = new RelayCommand((parameter) =>
+            {
+                var subMenuItem = parameter as SubMenuItemDetails;
+                if (subMenuItem == null) return;
+                try
+                {
+                    switch (subMenuItem.Name)
+                    {
+                        case "Pin":
+                            PinFolder();
+                            break;
+                        case "Copy":
+                            Copy();
+                            break;
+                        case "Cut":
+                            Cut();
+                            break;
+                        case "Paste":
+                            Paste(IsMoveOperation);
+                            break;
+                        case "Delete":
+                            Delete();
+                            break;
+                        case "Rename":
+                            Rename();
+                            break;
+                        case "New Folder":
+                            CreateNewFolder();
+                            break;
+                        case "Properties":
+                            ShowProperties();
+                            break;
+                        case "List":
+                            break;
+                        case "Tile":
+                            break;
+                        default:
+                            return;
+                    }
+                }
+                catch{}
+            }));
+
+        protected ICommand _createNewFolderCommand;
+
+        public ICommand CreateNewFolderCommand =>
+            _createNewFolderCommand ?? (_createNewFolderCommand = new Command(() =>
+            {
+                foreach (var folder in NavigatesFolderFiles.Where(f => f.IsSelected))
+                    folder.IsSelected = false;
+                OnPropertyChanged(nameof(NavigatesFolderFiles));
+
+                var i = FileSystem.GetDirectories(CurrentDirectory)
+                    .Count(x => x.Contains("New Folder"));
+                var path = i == 0
+                    ? $"{CurrentDirectory}\\NewFolder"
+                    : $"{CurrentDirectory}\\New Folder{i}";
+                Directory.CreateDirectory(path);
+
+                var file = new FileDetailsModel();
+                file.Name = Path.GetFileName(path);
+                file.Path = path;
+                file.IsDirectory = true;
+                file.FileExtension = string.Empty;
+                file.IsImage = false;
+                file.IsVideo = false;
+                file.FileIcon = GetImageForExtension(file);
+                file.IsSelected = true;
+
+                NavigatesFolderFiles.Add(file);
+                OnPropertyChanged(nameof(NavigatesFolderFiles));
+
+                Rename();
+            }));
         #endregion
     }
 }
