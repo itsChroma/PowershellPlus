@@ -137,7 +137,7 @@
                         Grid.Column="1"
                         Grid.Row="3"
                         Foreground="White"
-                        Text="{Binding FileSize, UpdateSourceTrigger=PropertyChanged, ElementName=PropertyDialog}"/>
+                        Text="{Binding Size, UpdateSourceTrigger=PropertyChanged, ElementName=PropertyDialog}"/>
 
                     <TextBlock
                         Grid.Row="4"
@@ -155,7 +155,7 @@
                         Grid.Column="1"
                         Grid.Row="5"
                         Foreground="White"
-                        Text="{Binding ModifiedOn, UpdateSourceTrigger=PropertyChanged, ElementName=PropertyDialog}"/>
+                        Text="{Binding DateModified, UpdateSourceTrigger=PropertyChanged, ElementName=PropertyDialog}"/>
 
                     <TextBlock
                         Grid.Row="6"

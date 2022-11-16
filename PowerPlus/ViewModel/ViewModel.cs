@@ -15,6 +15,8 @@ using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.VisualBasic;
@@ -49,6 +51,8 @@ namespace PowerPlus.ViewModel
         public string SelectedDriveSize { get; set; }
         public string SelectedFolderDetails { get; set; }
         public string NewFolderName { get; set; }
+        public bool IsListView { get; set; }
+        public string DriveSize { get; set; }
 
         public ObservableCollection<FileDetailsModel> FavoriteFolders { get; set; }
         public ObservableCollection<FileDetailsModel> RemoteFolders { get; set; }
@@ -220,6 +224,9 @@ namespace PowerPlus.ViewModel
             NavigatesFolderFiles.Clear();
             tempFolderCollection = null;
 
+            DriveSize = CalculateSize(new DriveInfo(fileDetailsModel.Path).TotalSize);
+            OnPropertyChanged((nameof(DriveSize)));
+
             if (PathHistoryCollection != null && position > 0)
             {
                 if (PathHistoryCollection.ElementAt(position) != fileDetailsModel.Path)
@@ -229,7 +236,7 @@ namespace PowerPlus.ViewModel
             if (!bgGetFilesBackgroundWorker.IsBusy)
                 bgGetFilesBackgroundWorker.CancelAsync();
 
-            bgGetFilesBackgroundWorker.RunWorkerAsync(fileDetailsModel);
+            bgGetFilesBackgroundWorker.RunWorkerAsync(fileDetailsModel); 
         }
 
         private void BgGetFilesBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -266,6 +273,11 @@ namespace PowerPlus.ViewModel
             var file = new FileDetailsModel();
             file.Name = Path.GetFileName(fileName);
             file.Path = fileName;
+
+            file.CreatedOn = GetCreatedOn(fileName);
+            file.DateModified = GetDateModified(fileName);
+            file.AccessedOn = GetLastAccessedOn(fileName);
+
             file.IsHidden = IsFileHidden(fileName);
             file.IsReadOnly = IsReadOnly(fileName);
             file.IsDirectory = IsDirectory(fileName);
@@ -280,7 +292,20 @@ namespace PowerPlus.ViewModel
 
         private void BgGetFilesBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            
+            foreach (var file in NavigatesFolderFiles)
+            {
+                var subWorker = new BackgroundWorker();
+                subWorker.DoWork += (o, args) =>
+                {
+                    file.Size = CalculateSize(GetDirectorySize(file.Path));
+                };
+                subWorker.RunWorkerCompleted += (o, args) =>
+                {
+                    subWorker.Dispose();
+                    CollectionViewSource.GetDefaultView(NavigatesFolderFiles).Refresh();
+                };
+                subWorker.RunWorkerAsync();
+            }
         }
 
         private string CalculateSize(long bytes)
@@ -308,8 +333,13 @@ namespace PowerPlus.ViewModel
         {
             try
             {
-                var d = new DirectoryInfo(directoryPath);
-                return d.EnumerateFiles("*", SearchOption.AllDirectories).Sum(fi => fi.Length);
+                if (FileSystem.DirectoryExists(directoryPath))
+                {
+                    var d = new DirectoryInfo(directoryPath);
+                    return d.EnumerateFiles("*", SearchOption.AllDirectories).Sum(fi => fi.Length);
+                }
+
+                return new FileInfo(directoryPath).Length;
             }
             catch (UnauthorizedAccessException)
             {
@@ -327,10 +357,10 @@ namespace PowerPlus.ViewModel
 
         private void BgGetFilesSizeBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var FileSize = NavigatesFolderFiles.Where(File => File.IsSelected && !File.IsDirectory)
+            var Size = NavigatesFolderFiles.Where(File => File.IsSelected && !File.IsDirectory)
                 .Sum(x => new FileInfo(x.Path).Length);
 
-            SelectedFolderDetails = CalculateSize(FileSize);
+            SelectedFolderDetails = CalculateSize(Size);
             OnPropertyChanged(nameof(SelectedFolderDetails));
 
             var Directories = NavigatesFolderFiles.Where(directory => directory.IsSelected && directory.IsDirectory);
@@ -338,8 +368,8 @@ namespace PowerPlus.ViewModel
             {
                 foreach (var directory in Directories)
                 {
-                    FileSize += GetDirectorySize(directory.Path);
-                    SelectedFolderDetails = CalculateSize(FileSize);
+                    Size += GetDirectorySize(directory.Path);
+                    SelectedFolderDetails = CalculateSize(Size);
                     OnPropertyChanged(nameof(SelectedFolderDetails));
                 }
             }
@@ -593,7 +623,7 @@ namespace PowerPlus.ViewModel
             }
         }
 
-        internal static string GetModifiedOn(string path)
+        internal static string GetDateModified(string path)
         {
             try
             {
@@ -660,9 +690,9 @@ namespace PowerPlus.ViewModel
                         Icon = f[0].FileIcon,
                         FileExtension = f[0].FileExtension,
                         FullPath = f[0].Path,
-                        FileSize = f[0].FileSize,
+                        Size = CalculateSize(GetDirectorySize(f[0].Path)),
                         CreatedOn = GetCreatedOn(f[0].Path),
-                        ModifiedOn = GetModifiedOn(f[0].Path),
+                        DateModified = GetDateModified(f[0].Path),
                         AccessedOn = GetLastAccessedOn(f[0].Path),
                         IsReadOnly = f[0].IsReadOnly,
                         IsHidden = f[0].IsHidden,
@@ -1033,8 +1063,6 @@ namespace PowerPlus.ViewModel
 
         protected ICommand _subMenuFileOperationCommand;
 
-        
-
         protected ICommand _unPinFavoriteFolderCommand;
 
         public ICommand UnPinFavoriteFolderCommand =>
@@ -1082,8 +1110,12 @@ namespace PowerPlus.ViewModel
                             ShowProperties();
                             break;
                         case "List":
+                            IsListView = true;
+                            OnPropertyChanged(nameof(IsListView));
                             break;
                         case "Tile":
+                            IsListView = false;
+                            OnPropertyChanged(nameof(IsListView));
                             break;
                         default:
                             return;
@@ -1122,6 +1154,44 @@ namespace PowerPlus.ViewModel
                 OnPropertyChanged(nameof(NavigatesFolderFiles));
 
                 Rename();
+            }));
+
+        protected ICommand _sortFilesCommand;
+
+        private bool SortedByAscending { get; set; }
+        public string SortedBy { get; set; }
+
+        public ICommand SortFilesCommand =>
+            _sortFilesCommand ?? (_sortFilesCommand = new RelayCommand((parameter) =>
+            {
+                var header = parameter as GridViewColumnHeader;
+                if (header == null ||
+                    string.IsNullOrWhiteSpace(header.Content.ToString())) return;
+
+                SortedByAscending = !SortedByAscending;
+                OnPropertyChanged(nameof(SortedByAscending));
+
+                CollectionViewSource.GetDefaultView(NavigatesFolderFiles)
+                    .SortDescriptions.Clear();
+                if (SortedByAscending)
+                {
+                    CollectionViewSource.GetDefaultView(NavigatesFolderFiles)
+                        .SortDescriptions
+                        .Add(new SortDescription(
+                            header.Content.ToString().Replace(" ", ""),
+                                        ListSortDirection.Descending));
+                }
+                else
+                {
+                    CollectionViewSource.GetDefaultView(NavigatesFolderFiles)
+                        .SortDescriptions
+                        .Add(new SortDescription(
+                            header.Content.ToString().Replace(" ", ""),
+                            ListSortDirection.Ascending));
+                }
+
+                SortedBy = (string) header.Content;
+                OnPropertyChanged(nameof(SortedBy));
             }));
         #endregion
     }

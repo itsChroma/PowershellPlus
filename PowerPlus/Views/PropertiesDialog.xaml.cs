@@ -31,7 +31,7 @@ namespace PowerPlus.Views
         }
 
         public static readonly DependencyProperty IconProperty =
-            DependencyProperty.Register("FileIcon", typeof(PathGeometry), typeof(PropertiesDialog));
+            DependencyProperty.Register("Icon", typeof(PathGeometry), typeof(PropertiesDialog));
 
 
         public string FileName
@@ -61,14 +61,14 @@ namespace PowerPlus.Views
         public static readonly DependencyProperty FullPathProperty =
             DependencyProperty.Register("FullPath", typeof(string), typeof(PropertiesDialog));
 
-        public string FileSize
+        public string Size
         {
-            get { return (string)GetValue(FileSizeProperty); }
-            set { SetValue(FileSizeProperty, value); }
+            get { return (string)GetValue(SizeProperty); }
+            set { SetValue(SizeProperty, value); }
         }
 
-        public static readonly DependencyProperty FileSizeProperty =
-            DependencyProperty.Register("FileSize", typeof(string), typeof(PropertiesDialog));
+        public static readonly DependencyProperty SizeProperty =
+            DependencyProperty.Register("Size", typeof(string), typeof(PropertiesDialog));
 
         public string CreatedOn
         {
@@ -79,14 +79,14 @@ namespace PowerPlus.Views
         public static readonly DependencyProperty CrwatedOnProperty =
             DependencyProperty.Register("CreatedOn", typeof(string), typeof(PropertiesDialog));
 
-        public string ModifiedOn
+        public string DateModified
         {
-            get { return (string)GetValue(ModifiedOnProperty); }
-            set { SetValue(ModifiedOnProperty, value); }
+            get { return (string)GetValue(DateModifiedProperty); }
+            set { SetValue(DateModifiedProperty, value); }
         }
 
-        public static readonly DependencyProperty ModifiedOnProperty =
-            DependencyProperty.Register("ModifiedOn", typeof(string), typeof(PropertiesDialog));
+        public static readonly DependencyProperty DateModifiedProperty =
+            DependencyProperty.Register("DateModified", typeof(string), typeof(PropertiesDialog));
 
         public string AccessedOn
         {

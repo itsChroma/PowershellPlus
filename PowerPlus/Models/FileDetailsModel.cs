@@ -13,9 +13,9 @@ namespace PowerPlus.Models
         public string Path { get; set; }
         public PathGeometry FileIcon { get; set; }
         public string FileExtension { get; set; }
-        public string FileSize { get; set; }
+        public string Size { get; set; }
         public string CreatedOn { get; set; }
-        public string ModifiedOn { get; set; }
+        public string DateModified { get; set; }
         public string AccessedOn { get; set; }
         public bool IsDirectory { get; set; }
         public bool IsReadOnly { get; set; }

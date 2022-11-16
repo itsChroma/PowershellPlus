@@ -63,6 +63,9 @@
                                       Grid.ColumnSpan="2"
                                       Height="32">
                                     <Border Name="NavBorder">
+                                        <Border.Effect>
+                                            <DropShadowEffect Opacity="0.6" Direction="270" ShadowDepth="2" BlurRadius="10"/>
+                                        </Border.Effect>
                                         <Border.Background>
                                             <SolidColorBrush 
                                                 Color="#1B1E20"
@@ -120,8 +123,9 @@
                                                 Opacity="1"/>
                                         </Border.Background>
                                     </Border>
+
                                 </Grid>
-                                <Grid Grid.RowSpan="2"
+                                <Grid Grid.RowSpan="1"
                                       Grid.Row="2"
                                       Grid.ColumnSpan="2">
                                     <AdornerDecorator>
@@ -134,13 +138,6 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsActive"
                                      Value="False">
-                                <Setter Property="Effect">
-                                    <Setter.Value>
-                                        <BlurEffect KernelType="Gaussian"
-                                                    Radius="5"
-                                                    RenderingBias="Quality"/>
-                                    </Setter.Value>
-                                </Setter>
                             </Trigger>
 
                             <Trigger Property="WindowState"
@@ -164,6 +161,11 @@
 
         <!--Region Left Navigation-->
         <Grid>
+
+            <Grid.Effect>
+                <DropShadowEffect Opacity="0.8" Direction="-6" BlurRadius="3" ShadowDepth="3"/>
+            </Grid.Effect>
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="95"/>
@@ -475,6 +477,19 @@
                       SelectionMode="Extended"
                       ItemsSource="{Binding NavigatesFolderFiles, UpdateSourceTrigger=PropertyChanged}">
 
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Pin"/>
+                        <MenuItem Header="Copy"/>
+                        <MenuItem Header="Cut"/>
+                        <MenuItem Header="Paste"/>
+                        <MenuItem Header="Delete"/>
+                        <MenuItem Header="Rename"/>
+                        <MenuItem Header="New Folder"/>
+                        <MenuItem Header="Properties"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+
                 <b:Interaction.Triggers>
                     <b:EventTrigger EventName="MouseDoubleClick">
                         <b:InvokeCommandAction
@@ -534,8 +549,11 @@
                 <StackPanel DockPanel.Dock="Right"
                             Margin="12,0"
                             VerticalAlignment="Center">
-                    <TextBlock
-                        Text="465 Gb"/>
+
+                     <TextBlock>
+                         <Run Text="Total Disk Space:"/>
+                         <Run Text="{Binding DriveSize, UpdateSourceTrigger=PropertyChanged}"/>
+                     </TextBlock>
                 </StackPanel>
             </DockPanel>
             <!--#endregion-->
