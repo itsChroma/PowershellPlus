@@ -268,6 +268,10 @@
            TargetType="{x:Type ToggleButton}"
            BasedOn="{StaticResource ToggleButtonWithIconStyle}">
         <Setter Property="Content" Value="{DynamicResource CollapseArrow}"/>
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+        <Setter Property="Width" Value="44"/>
+        <Setter Property="Height" Value="11"/>
+        <Setter Property="Foreground" Value="White"/>
         <Style.Triggers>
             <Trigger Property="IsChecked"
                      Value="True">

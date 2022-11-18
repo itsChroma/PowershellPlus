@@ -470,7 +470,7 @@
                       Background="Transparent"
                       Margin="12,10,12,5"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.VerticalScrollBarVisibility="Hidden"
                       BorderThickness="1"
                       SelectedItem="{Binding Mode=OneWay}"
                       BorderBrush="White"

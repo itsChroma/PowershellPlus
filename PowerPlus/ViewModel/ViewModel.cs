@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.FileIO;
+using Microsoft.VisualBasic.Logging;
 using PowerPlus.Commands;
 using PowerPlus.Models;
 using PowerPlus.Views;
@@ -30,7 +31,7 @@ using SearchOption = System.IO.SearchOption;
 
 namespace PowerPlus.ViewModel
 {
-    public class ViewModel: INotifyPropertyChanged
+    public class ViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -273,11 +274,9 @@ namespace PowerPlus.ViewModel
             var file = new FileDetailsModel();
             file.Name = Path.GetFileName(fileName);
             file.Path = fileName;
-
             file.CreatedOn = GetCreatedOn(fileName);
             file.DateModified = GetDateModified(fileName);
             file.AccessedOn = GetLastAccessedOn(fileName);
-
             file.IsHidden = IsFileHidden(fileName);
             file.IsReadOnly = IsReadOnly(fileName);
             file.IsDirectory = IsDirectory(fileName);
@@ -302,7 +301,7 @@ namespace PowerPlus.ViewModel
                 subWorker.RunWorkerCompleted += (o, args) =>
                 {
                     subWorker.Dispose();
-                    CollectionViewSource.GetDefaultView(NavigatesFolderFiles).Refresh();
+
                 };
                 subWorker.RunWorkerAsync();
             }
@@ -589,6 +588,8 @@ namespace PowerPlus.ViewModel
                     }
                 }
             }
+
+            LoadDirectory(new FileDetailsModel() { Path = CurrentDirectory });
         }
 
         internal void CreateNewFolder()
@@ -910,8 +911,6 @@ namespace PowerPlus.ViewModel
 
         public ICommand _getFilesListCommand;
 
-        
-
         public ICommand GetFilesListCommand =>
             _getFilesListCommand ?? (_getFilesListCommand = new RelayCommand(parameter =>
             {
@@ -951,7 +950,7 @@ namespace PowerPlus.ViewModel
             {
                 var file = parameter as FileDetailsModel;
                 if (file == null) return;
-                ;
+                
                 SelectedFolderDetails = "Calculating Size...";
                 OnPropertyChanged(nameof(SelectedFolderDetails));
                 bgGetFilesSizeBackgroundWorker.DoWork += BgGetFilesSizeBackgroundWorker_DoWork;
@@ -968,7 +967,6 @@ namespace PowerPlus.ViewModel
                         WorkerSupportsCancellation = true
                     };
                 }
-
                 bgGetFilesSizeBackgroundWorker.RunWorkerAsync();
             }));
 
@@ -1034,7 +1032,7 @@ namespace PowerPlus.ViewModel
                 {
                     IsAtRootDirectory = true;
                     OnPropertyChanged(nameof(IsAtRootDirectory));
-                    return;;
+                    return;
                 }
                 else
                 {
@@ -1161,6 +1159,7 @@ namespace PowerPlus.ViewModel
         private bool SortedByAscending { get; set; }
         public string SortedBy { get; set; }
 
+        [CanBeNull]
         public ICommand SortFilesCommand =>
             _sortFilesCommand ?? (_sortFilesCommand = new RelayCommand((parameter) =>
             {

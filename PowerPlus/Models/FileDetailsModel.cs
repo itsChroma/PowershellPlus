@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,9 @@ namespace PowerPlus.Models
         public bool IsPinned { get; set; }
 
         internal string _Type { get; set; }
-        public string Type => _Type = IsDirectory ? "Folder" : "File";
+        public string Type => _Type = IsDirectory ? "Folder" : $"{FileExtension} File";
+
+        internal string _ToolTipType { get; set; }
+        public string ToolTipType => _ToolTipType = IsDirectory ? "Folder" : "File";
     }
 }
